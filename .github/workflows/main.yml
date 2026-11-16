@@ -14,8 +14,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
-      - run: gradle testDebugUnitTest assembleDebug --no-daemon --stacktrace
+      - name: Cari folder proyek
+        id: p
+        run: |
+          f=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
+          echo "Ditemukan: $f"
+          echo "dir=$(dirname "$f")" >> $GITHUB_OUTPUT
+      - name: Test + build APK
+        working-directory: ${{ steps.p.outputs.dir }}
+        run: gradle testDebugUnitTest assembleDebug --no-daemon --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: DominoEngine-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ steps.p.outputs.dir }}/app/build/outputs/apk/debug/app-debug.apk
